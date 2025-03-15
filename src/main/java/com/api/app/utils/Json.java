@@ -1,48 +1,15 @@
-package com.api.app;
+package com.api.app.utils;
 
-import com.api.app.exception.BusinessException;
 import com.api.app.model.Product;
-import com.sun.net.httpserver.HttpExchange;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-import static java.lang.System.in;
-
-public final class Utils {
-    public static void writeResponse(String body, int statusCode, String statusText, OutputStream out) throws IOException {
-        String response = "HTTP/1.1 " + statusCode + " " + statusText + "\r\n" +
-                "Content-Type: application/json\r\n" +
-                "Content-Length: " + body.length() + "\r\n" +
-                "Connection: close\r\n" +
-                "\r\n" +
-                body + "\r\n";
-
-        out.write(response.getBytes());
-        out.flush();
-    }
-
-//    public static void writeErrorResponse(Exception e, HttpExchange exchange) throws IOException {
-//        ErrorResponse error;
-//        int statusCode;
-//
-//        if (e instanceof BusinessException) {
-//            BusinessException be = (BusinessException) e;
-//            error = new ErrorResponse(be.getMessage(), be.getCode(), be.getStatus());
-//            statusCode = be.getStatus();
-//        } else {
-//            error = new ErrorResponse("Internal Server Error", "INTERNAL_ERROR", 500);
-//            statusCode = 500;
-//        }
-//
-//        writeResponse(jsonError, statusCode, exchange);
-//    }
-
+public class Json {
     public static Product parseJson(String request) {
-        List<String> values = new ArrayList<>(); // Use ArrayList instead of immutable List.of()
+        List<String> values = new ArrayList<>();
 
         String[] fields = request.split(",");
 
@@ -53,21 +20,19 @@ public final class Utils {
 
                 try {
                     var a = value.trim().replace("\"", "").replace("}", "");
-                    values.add(a); // Add the cleaned value to the list
+                    values.add(a);
                 } catch (Exception e) {
                     System.out.println(e);
                 }
             }
         }
 
-        // Check if we have enough values before creating the Product
         if (values.size() >= 3) {
-            var product = new Product(
-                    Integer.valueOf(values.get(0)),
+            return new Product(
+                    Integer.parseInt(values.get(0)),
                     values.get(1),
-                    Double.valueOf(values.get(2))
+                    Double.parseDouble(values.get(2))
             );
-            return product;
 
         } else {
             throw new IllegalArgumentException("Not enough values extracted from the request");
@@ -81,7 +46,7 @@ public final class Utils {
             case Number n -> build.append(n);
             case String s -> build.append("\"").append(s).append("\"");
             case List l -> {
-                return new StringBuilder(l.stream().map(Utils::convertToJson).toList().toString());
+                return new StringBuilder(l.stream().map(Json::convertToJson).toList().toString());
             }
             case Record r -> {
                 return Arrays.stream(object.getClass().getDeclaredFields()).map(field -> {

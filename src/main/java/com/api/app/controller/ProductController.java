@@ -1,16 +1,15 @@
-package com.api.app.product;
+package com.api.app.controller;
 
-import com.api.app.Utils;
 import com.api.app.model.Product;
 import com.api.app.service.ProductService;
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
 
-import static com.api.app.Utils.*;
+import static com.api.app.utils.Http.writeResponse;
+import static com.api.app.utils.Json.convertToJson;
+import static com.api.app.utils.Json.parseJson;
 
 public class ProductController {
     ProductService productService;
@@ -23,16 +22,17 @@ public class ProductController {
         switch (method) {
             case "POST":
                 Product requestProduct = parseJson(requestBody);
-                String creationResponse = productService.createProduct(requestProduct);
-                Utils.writeResponse(creationResponse, 201, "CREATED", out);
+                Product product = productService.createProduct(requestProduct);
+                String creationResponse = convertToJson(product).toString();
+                writeResponse(creationResponse, 201, "CREATED", out);
                 break;
             case "GET":
-                String response = productService.getProducts();
-                Utils.writeResponse(response, 200, "OK", out);
+                List<Product> products = productService.getProducts();
+                String response = convertToJson(products).toString();
+                writeResponse(response, 200, "OK", out);
                 break;
             default:
-                Utils.writeResponse("Method Not Allowed", 405, "METHOD NOT ALLOWED", out);
-
+                writeResponse("Method Not Allowed", 405, "METHOD NOT ALLOWED", out);
         }
 
     }

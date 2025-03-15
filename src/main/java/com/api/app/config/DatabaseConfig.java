@@ -13,8 +13,6 @@ public class DatabaseConfig {
 
     public DatabaseConfig() {
         try {
-            // Load the driver
-            // Q: What is class.forName
             Class.forName("org.sqlite.JDBC");
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("Failed to load database driver", e);
